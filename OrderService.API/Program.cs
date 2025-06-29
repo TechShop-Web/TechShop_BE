@@ -14,6 +14,15 @@ var config = builder.Configuration;
 
 builder.Services.AddDbContext<OrderContext>(options =>
   options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+builder.Services.AddGrpcClient<ProductService.ProductService.ProductServiceClient>(options =>
+{
+    var productServiceUrl = config["GrpcSettings:ProductServiceUrl"];
+    if (string.IsNullOrEmpty(productServiceUrl))
+    {
+        throw new InvalidOperationException("The ProductServiceUrl configuration is missing or empty.");
+    }
+    options.Address = new Uri(productServiceUrl);
+});
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddControllers();

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ProductService;
+
+service ProductService {
+  rpc CheckVariantAvailability (VariantRequest) returns (VariantResponse) {}
+}
+
+message VariantRequest {
+  int32 product_id = 1;
+  int32 variant_id = 2;
+  int32 quantity = 3;
+}
+
+message VariantResponse {
+  bool product_exists = 1;
+  bool variant_exists = 2;
+  int32 stock_quantity = 3;
+  string error = 4;
+}

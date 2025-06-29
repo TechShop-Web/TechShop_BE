@@ -5,8 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
+	<ItemGroup>
+		<Protobuf Include="Protos\product.proto" GrpcServices="Client" />
+	</ItemGroup>
   <ItemGroup>
+	  <PackageReference Include="Grpc.Net.Client" Version="2.51.0" />
+	  <PackageReference Include="Grpc.Net.ClientFactory" Version="2.51.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
@@ -15,10 +19,12 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OrderService.Service\OrderService.Service.csproj" />
+    <ProjectReference Include="..\SharedProtos\SharedProtos.csproj" />
   </ItemGroup>
 
 </Project>

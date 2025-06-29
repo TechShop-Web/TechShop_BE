@@ -2,7 +2,7 @@
 
 namespace OrderService.Service.Interfaces
 {
-    internal interface IOrderService
+    public interface IOrderService
     {
         Task CreateOrderAsync(OrderRequest orderRequest);
     }
