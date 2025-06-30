@@ -8,6 +8,7 @@ using OrderService.Repository.ApplicationContext;
 using OrderService.Repository.Implementations;
 using OrderService.Repository.Interfaces;
 using OrderService.Service.Interfaces;
+using OrderService.Service.Mapper;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,10 +26,19 @@ builder.Services.AddGrpcClient<ProductService.ProductService.ProductServiceClien
     }
     options.Address = new Uri(productServiceUrl);
 });
-
+builder.Services.AddGrpcClient<UserService.UserService.UserServiceClient>(options =>
+{
+    var userServiceUrl = config["GrpcSettings:UserServiceUrl"];
+    if (string.IsNullOrEmpty(userServiceUrl))
+    {
+        throw new InvalidOperationException("The UserServiceUrl configuration is missing or empty.");
+    }
+    options.Address = new Uri(userServiceUrl);
+});
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrderService, OrderService.Service.Implementations.OrderService>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddControllers();
 

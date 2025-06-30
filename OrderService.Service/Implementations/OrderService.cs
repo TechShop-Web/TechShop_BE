@@ -1,4 +1,6 @@
-﻿using OrderService.Repository.Enum;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using OrderService.Repository.Enum;
 using OrderService.Repository.Interfaces;
 using OrderService.Repository.Models;
 using OrderService.Service.Interfaces;
@@ -9,9 +11,11 @@ namespace OrderService.Service.Implementations
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public OrderService(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ApiResponse<object>> CreateOrderAsync(int userId, OrderRequest orderRequest)
@@ -71,6 +75,66 @@ namespace OrderService.Service.Implementations
                 return ApiResponse<object>.Fail("An error occurred while creating the order.", ex.Message);
             }
         }
+
+        public async Task<ApiResponse<OrderMapperModel>> GetOrderByIdAsync(int orderId)
+        {
+            if (orderId <= 0)
+            {
+                throw new ArgumentException("Order ID must be greater than zero.", nameof(orderId));
+            }
+
+            try
+            {
+                var order = await _unitOfWork.Orders
+                    .Query()
+                    .Include(p => p.OrderItems)
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+                if (order == null)
+                {
+                    return ApiResponse<OrderMapperModel>.Fail("Order not found.");
+                }
+
+                var orderDto = _mapper.Map<OrderMapperModel>(order);
+
+                return ApiResponse<OrderMapperModel>.Ok(orderDto, "Order retrieved successfully.");
+            }
+            catch (Exception)
+            {
+                return ApiResponse<OrderMapperModel>.Fail("An error occurred while retrieving the order.");
+            }
+        }
+
+        public async Task<ApiResponse<List<OrderMapperModel>>> GetOrdersByUserIdAsync(int userId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than zero.", nameof(userId));
+            }
+
+            try
+            {
+                var orders = await _unitOfWork.Orders
+                    .Query()
+                    .Include(o => o.OrderItems)
+                    .Where(o => o.UserId == userId)
+                    .ToListAsync();
+
+                if (!orders.Any())
+                {
+                    return ApiResponse<List<OrderMapperModel>>.Fail("No orders found for this user.");
+                }
+
+                var mappedOrders = _mapper.Map<List<OrderMapperModel>>(orders);
+
+                return ApiResponse<List<OrderMapperModel>>.Ok(mappedOrders, "Orders retrieved successfully.");
+            }
+            catch (Exception)
+            {
+                return ApiResponse<List<OrderMapperModel>>.Fail("An error occurred while retrieving orders.");
+            }
+        }
+
         private string GenerateOrderNumber()
         {
             return $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}-{new Random().Next(1000, 9999)}";

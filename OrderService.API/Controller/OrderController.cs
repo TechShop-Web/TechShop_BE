@@ -14,10 +14,12 @@ namespace OrderService.API.Controller
     {
         private readonly IOrderService _orderService;
         private readonly ProductService.ProductService.ProductServiceClient _productClient;
-        public OrderController(IOrderService orderService, ProductService.ProductService.ProductServiceClient productClient)
+        private readonly UserService.UserService.UserServiceClient _userClient;
+        public OrderController(IOrderService orderService, ProductService.ProductService.ProductServiceClient productClient, UserService.UserService.UserServiceClient userClient)
         {
             _orderService = orderService;
             _productClient = productClient ?? throw new ArgumentNullException(nameof(productClient));
+            _userClient = userClient;
         }
 
         // POST: api/Order
@@ -72,21 +74,56 @@ namespace OrderService.API.Controller
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetOrderById(int id)
         {
-            return Ok();
+            if (id <= 0)
+            {
+                return BadRequest("Invalid order ID.");
+            }
+            var order = await _orderService.GetOrderByIdAsync(id);
+            if (order == null)
+            {
+                return NotFound($"Order with ID {id} not found.");
+            }
+            return Ok(order);
         }
 
         // GET: api/Order/user/{userId}
         [HttpGet("user/{userId:int}")]
         public async Task<IActionResult> GetOrdersByUserId(int userId)
         {
-            return Ok();
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID.");
+            }
+            var order = await _orderService.GetOrderByIdAsync(userId);
+            if (order == null)
+            {
+                return NotFound($"Order with user ID {userId} not found.");
+            }
+            return Ok(order);
         }
 
         // PUT: api/Order/{id}/cancel
-        [HttpPut("{id:int}/cancel")]
-        public async Task<IActionResult> CancelOrder(int id)
+        [HttpPatch("{id:int}/cancel")]
+        public IActionResult CancelOrder(int id)
         {
-            return NoContent();
+            return Ok("This endpoint is not implemented yet. Please check back later.");
+        }
+        [HttpGet("test/{id}")]
+        public async Task<IActionResult> TestUserService(int id)
+        {
+            try
+            {
+                var userResponse = await _userClient.CheckUserExistsAsync(new UserService.UserCheckRequest
+                {
+                    UserId = id
+                });
+                return Ok(userResponse);
+            }
+            catch (RpcException ex)
+            {
+                return StatusCode(500, $"gRPC Error: {ex.Status.Detail}");
+            }
+
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using UserService.API.Services.Grpc;
 using UserService.Repository.Models;
 using UserService.Repository.Repositories;
 using UserService.Service.Services;
@@ -36,6 +37,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService.Service.Services.UserService>();
 
+builder.Services.AddGrpc();
+
 // Add Controller + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -44,7 +47,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "UserService API", Version = "v1" });
 
-    
+
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -81,8 +84,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthentication();    
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGrpcService<UserGrpcService>();
 
 app.MapControllers();
 
