@@ -4,19 +4,12 @@ namespace OrderService.Service.Models
 {
     public class OrderRequest
     {
-        [Required(ErrorMessage = "UserId is required")]
-        public int UserId { get; set; }
-
         [Required(ErrorMessage = "Subtotal is required")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Subtotal must be greater than 0")]
         public decimal Subtotal { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "ShippingCost cannot be negative")]
         public decimal ShippingCost { get; set; }
-
-        [Required(ErrorMessage = "TotalAmount is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "TotalAmount must be greater than 0")]
-        public decimal TotalAmount { get; set; }
 
         [MaxLength(500, ErrorMessage = "ShippingAddress cannot exceed 500 characters")]
         public string? ShippingAddress { get; set; }
@@ -36,12 +29,11 @@ namespace OrderService.Service.Models
         [Required(ErrorMessage = "ProductId is required")]
         public int ProductId { get; set; }
 
-        [Required(ErrorMessage = "VariantId is required")]
-        public int VariantId { get; set; }
-
         [Required(ErrorMessage = "ProductName is required")]
         [MaxLength(255, ErrorMessage = "ProductName cannot exceed 255 characters")]
         public string ProductName { get; set; }
+        [Required(ErrorMessage = "VariantId is required")]
+        public int VariantId { get; set; }
 
         [Required(ErrorMessage = "VariantName is required")]
         [MaxLength(255, ErrorMessage = "VariantName cannot exceed 255 characters")]
@@ -54,9 +46,5 @@ namespace OrderService.Service.Models
         [Required(ErrorMessage = "UnitPrice is required")]
         [Range(0.01, double.MaxValue, ErrorMessage = "UnitPrice must be greater than 0")]
         public decimal UnitPrice { get; set; }
-
-        [Required(ErrorMessage = "TotalPrice is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "TotalPrice must be greater than 0")]
-        public decimal TotalPrice { get; set; }
     }
 }

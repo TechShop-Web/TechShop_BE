@@ -7,6 +7,7 @@ using OrderService.API.Middleware;
 using OrderService.Repository.ApplicationContext;
 using OrderService.Repository.Implementations;
 using OrderService.Repository.Interfaces;
+using OrderService.Service.Interfaces;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ var config = builder.Configuration;
 
 builder.Services.AddDbContext<OrderContext>(options =>
   options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddGrpcClient<ProductService.ProductService.ProductServiceClient>(options =>
 {
     var productServiceUrl = config["GrpcSettings:ProductServiceUrl"];
@@ -23,9 +25,13 @@ builder.Services.AddGrpcClient<ProductService.ProductService.ProductServiceClien
     }
     options.Address = new Uri(productServiceUrl);
 });
+
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IOrderService, OrderService.Service.Implementations.OrderService>();
+
 builder.Services.AddControllers();
+
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -44,6 +50,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         return new BadRequestObjectResult(result);
     };
 });
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   .AddJwtBearer(options =>
   {
@@ -89,7 +96,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           }
       };
   });
+
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

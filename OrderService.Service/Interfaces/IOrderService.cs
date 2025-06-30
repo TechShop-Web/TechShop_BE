@@ -4,6 +4,6 @@ namespace OrderService.Service.Interfaces
 {
     public interface IOrderService
     {
-        Task CreateOrderAsync(OrderRequest orderRequest);
+        Task<ApiResponse<object>> CreateOrderAsync(int userId, OrderRequest orderRequest);
     }
 }
