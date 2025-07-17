@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CartService.Repository\CartService.Repository.csproj" />
     <ProjectReference Include="..\CartService.Service\CartService.Service.csproj" />
+    <ProjectReference Include="..\SharedProtos\SharedProtos.csproj" />
   </ItemGroup>
 
 </Project>

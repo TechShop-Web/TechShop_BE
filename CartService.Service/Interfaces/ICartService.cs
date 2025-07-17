@@ -8,12 +8,11 @@ namespace CartService.Service.Interfaces
     {
         Task<ApiResponse<object>> CreateCartAsync(int userId, CartItem CartRequest);
         Task<ApiResponse<CartItem>> GetCartByIdAsync(int CartId);
-        Task<ApiResponse<List<CartItem>>> GetCartsByUserIdAsync(int userId);
+        Task<ApiResponse<CartItem>> GetCartsByUserIdAsync(int userId);
         Task<ApiResponse<object>> UpdateCartAsync(int userId, CartItem CartRequest);
         Task<ApiResponse<object>> DeleteCartAsync(int userId, int CartId);
         Task<ApiResponse<object>> ClearCartAsync(int userId);
-        //Task<ApiResponse<object>> AddItemToCartAsync(int userId, CartItem item);
-        Task<ApiResponse<object>> RemoveItemFromCartAsync(int userId, int itemId);
+        Task<ApiResponse<object>> AddItemToCartAsync(int userId, CartItem item);
 
 
     }

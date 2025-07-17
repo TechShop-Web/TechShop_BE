@@ -20,44 +20,71 @@ namespace CartService.Service.Implementations
             _unitOfWork = unitOfWork;
         }
 
-        //public Task<ApiResponse<object>> AddItemToCartAsync(int userId, CartItem item)
-        //{
-
-        //}
-
-        public Task<ApiResponse<object>> ClearCartAsync(int userId)
+        public async Task<ApiResponse<object>> AddItemToCartAsync(int userId, CartItem item)
         {
-            throw new NotImplementedException();
+            await _cartRepository.AddAsync(item);
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse<object>.Ok(new { ItemId = item.Id }, "Item added successfully.");
         }
 
-        public Task<ApiResponse<object>> CreateCartAsync(int userId, CartItem CartRequest)
+        public async Task<ApiResponse<object>> ClearCartAsync(int userId)
         {
-            throw new NotImplementedException();
+            var items = await _cartRepository.GetCartItemsByUserIdAsync(userId);
+            _cartRepository.Delete(items);
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse<object>.Ok(null, "Cart cleared successfully.");
         }
 
-        public Task<ApiResponse<object>> DeleteCartAsync(int userId, int CartId)
+        public async Task<ApiResponse<object>> CreateCartAsync(int userId, CartItem cartRequest)
         {
-            throw new NotImplementedException();
+
+            var cartItems = new CartItem
+            {
+                UserId = userId,
+                VariantId = cartRequest.VariantId,
+                Quantity = cartRequest.Quantity,
+                UnitPrice = cartRequest.UnitPrice,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _cartRepository.AddAsync(cartItems);
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse<object>.Ok(new { CartId = cartItems.Id }, "Cart created successfully.");
         }
 
-        public Task<ApiResponse<CartItem>> GetCartByIdAsync(int CartId)
+        public async Task<ApiResponse<object>> DeleteCartAsync(int userId, int CartId)
         {
-            throw new NotImplementedException();
+            var cart = await _cartRepository.GetByIdAsync(CartId);
+            if (cart == null || cart.UserId != userId) return ApiResponse<object>.Fail("Cart not found.");
+            _cartRepository.Delete(cart);
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse<object>.Ok(null, "Cart deleted successfully.");
         }
 
-        public Task<ApiResponse<List<CartItem>>> GetCartsByUserIdAsync(int userId)
+        public async Task<ApiResponse<CartItem>> GetCartByIdAsync(int CartId)
         {
-            throw new NotImplementedException();
+            var cart = await _cartRepository.GetByIdAsync(CartId);
+            return cart == null ? ApiResponse<CartItem>.Fail("Cart not found.") : ApiResponse<CartItem>.Ok(cart);
         }
 
-        public Task<ApiResponse<object>> RemoveItemFromCartAsync(int userId, int itemId)
+        public async Task<ApiResponse<CartItem>> GetCartsByUserIdAsync(int userId)
         {
-            throw new NotImplementedException();
+            var carts = await _cartRepository.GetCartItemsByUserIdAsync(userId);
+            if (carts == null) return ApiResponse<CartItem>.Fail("Carts not found.");
+            return ApiResponse<CartItem>.Ok(carts);
         }
 
-        public Task<ApiResponse<object>> UpdateCartAsync(int userId, CartItem CartRequest)
+
+
+        public async Task<ApiResponse<object>> UpdateCartAsync(int userId, CartItem CartRequest)
         {
-            throw new NotImplementedException();
+            var cart = await _cartRepository.GetByIdAsync(CartRequest.Id);
+            if (cart == null || cart.UserId != userId) return ApiResponse<object>.Fail("Cart not found.");
+            cart.VariantId = CartRequest.VariantId;
+            cart.Quantity = CartRequest.Quantity;
+            cart.UnitPrice = CartRequest.UnitPrice;
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse<object>.Ok(null, "Cart updated successfully.");
         }
     }
 }
+
