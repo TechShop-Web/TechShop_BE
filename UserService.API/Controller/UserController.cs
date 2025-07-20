@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using UserService.Repository.Models;
+using UserService.Service.DTO;
 using UserService.Service.Enums;
 using UserService.Service.Services;
 
@@ -102,49 +103,60 @@ namespace UserService.API.Controllers
             }
         }
 
-        // ✅ Đăng nhập – trả JWT Token
-        [AllowAnonymous]
+        //    // ✅ Đăng nhập – trả JWT Token
+        //    [AllowAnonymous]
+        //    [HttpPost("login")]
+        //    public async Task<IActionResult> Login([FromBody] LoginDto login)
+        //    {
+        //        try
+        //        {
+        //            var user = await _userService.LoginAsync(login.Email, login.Password);
+
+        //            var claims = new[]
+        //            {
+        //                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        //                new Claim(ClaimTypes.Email, user.Email),
+        //                new Claim(ClaimTypes.Role, user.Role)
+        //            };
+
+        //            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+        //            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        //            var token = new JwtSecurityToken(
+        //                issuer: _config["Jwt:Issuer"],
+        //                audience: _config["Jwt:Audience"],
+        //                claims: claims,
+        //                expires: DateTime.Now.AddHours(3),
+        //                signingCredentials: creds
+        //            );
+
+        //            return Ok(new
+        //            {
+        //                token = new JwtSecurityTokenHandler().WriteToken(token),
+        //                user = new { user.Id, user.Email, user.FullName, user.Role }
+        //            });
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return Unauthorized(new { message = ex.Message });
+        //        }
+        //    }
+        //}
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto login)
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try
             {
-                var user = await _userService.LoginAsync(login.Email, login.Password);
-
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, user.Role)
-                };
-
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-                var token = new JwtSecurityToken(
-                    issuer: _config["Jwt:Issuer"],
-                    audience: _config["Jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddHours(3),
-                    signingCredentials: creds
-                );
-
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    user = new { user.Id, user.Email, user.FullName, user.Role }
-                });
+                var token = await _userService.LoginAsync(loginDto);
+                return Ok(new { Token = token });
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException)
             {
-                return Unauthorized(new { message = ex.Message });
+                return Unauthorized("Tên người dùng hoặc mật khẩu không đúng");
             }
         }
-    }
 
-    public class LoginDto
-    {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
+     
     }
 }

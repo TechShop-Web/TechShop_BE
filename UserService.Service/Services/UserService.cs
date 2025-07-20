@@ -1,16 +1,25 @@
 ﻿using BCrypt.Net;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using UserService.Repository.Models;
 using UserService.Repository.Repositories;
+using UserService.Service.DTO;
 
 namespace UserService.Service.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepo;
+        private readonly IConfiguration _configuration;
 
-        public UserService(IUserRepository userRepo)
+
+        public UserService(IUserRepository userRepo, IConfiguration configuration)
         {
             _userRepo = userRepo;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<User>> GetAllAsync() => await _userRepo.GetAllAsync();
@@ -59,18 +68,53 @@ namespace UserService.Service.Services
         }
 
 
-        public async Task<User?> LoginAsync(string email, string password)
+        //public async Task<User?> LoginAsync(string email, string password)
+        //{
+        //    var user = await _userRepo.GetByEmailAsync(email);
+
+        //    if (user == null)
+        //        throw new Exception("Email không tồn tại.");
+
+        //    if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
+        //        throw new Exception("Mật khẩu không đúng.");
+
+        //    return user;
+        //}
+        public async Task<LoginResponseDTO?> LoginAsync(LoginDto loginDto)
         {
-            var user = await _userRepo.GetByEmailAsync(email);
+            var user = await _userRepo.GetByEmailAsync(loginDto.Email);
+            if (user == null || user.Password != loginDto.Password)
+                throw new UnauthorizedAccessException("Sai email hoặc mật khẩu");
 
-            if (user == null)
-                throw new Exception("Email không tồn tại.");
+            var issuer = _configuration["JwtConfig:Issuer"];
+            var audience = _configuration["JwtConfig:Audience"];
+            var key = _configuration["JwtConfig:Key"];
 
-            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-                throw new Exception("Mật khẩu không đúng.");
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role ?? "User")
+            }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
 
-            return user;
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = jwtTokenHandler.CreateToken(tokenDescriptor);
+            var assertedToken = jwtTokenHandler.WriteToken(securityToken);
+
+            return new LoginResponseDTO
+            {
+                AccessToken = assertedToken,
+                Email = loginDto.Email
+            };
         }
-
     }
 }
