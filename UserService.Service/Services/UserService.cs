@@ -86,9 +86,9 @@ namespace UserService.Service.Services
             if (user == null || user.Password != loginDto.Password)
                 throw new UnauthorizedAccessException("Sai email hoặc mật khẩu");
 
-            var issuer = _configuration["JwtConfig:Issuer"];
-            var audience = _configuration["JwtConfig:Audience"];
-            var key = _configuration["JwtConfig:Key"];
+            var issuer = _configuration["Jwt:Issuer"];
+            var audience = _configuration["Jwt:Audience"];
+            var key = _configuration["Jwt:Key"];
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
