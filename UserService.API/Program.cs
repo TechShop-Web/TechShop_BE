@@ -37,10 +37,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = config["JwtConfig:Issuer"],
-            ValidAudience = config["JwtConfig:Audience"],
+            ValidIssuer = config["Jwt:Issuer"],
+            ValidAudience = config["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                config["JwtConfig:Key"] ?? throw new ArgumentNullException("JwtConfig:Key not configured")))
+                config["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key not configured")))
         };
         options.Events = new JwtBearerEvents
         {
