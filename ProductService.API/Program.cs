@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ProductService.API.Services.Grpc;
 using ProductService.Repository.Frameworks;
 using ProductService.Repository.Repositories;
 using ProductService.Service.Services;
@@ -7,8 +6,12 @@ using ProductService.Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Thêm DbContext
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Đăng ký DbContext và chỉ định assembly chứa migrations
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("ProductService.Repository")));  // Chỉ định nơi chứa migrations
 
 // 2. Đăng ký Repository + UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -19,7 +22,7 @@ builder.Services.AddScoped<IProductService, ProductService.Service.Services.Prod
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
 
-builder.Services.AddGrpc();
+
 
 // 4. Thêm Controller + Swagger
 builder.Services.AddControllers();
@@ -36,8 +39,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
-app.MapGrpcService<ProductGrpcService>();
-
 app.MapControllers();
 app.Run();

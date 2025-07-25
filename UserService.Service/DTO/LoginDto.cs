@@ -15,6 +15,7 @@ namespace UserService.Service.DTO
     {
         public string? Email { get; set; } = null!;
         public string? AccessToken { get; set; } = null!;
-        public int ExpiresIn { get; set; }
+        public string? Role { get; set; }
+
     }
 }

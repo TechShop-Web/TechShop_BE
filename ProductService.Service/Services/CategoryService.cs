@@ -24,6 +24,7 @@ namespace ProductService.Service.Services
 
         public async Task<Category> CreateAsync(Category category)
         {
+
             await _unitOfWork.CategoryRepository.AddAsync(category);
             await _unitOfWork.SaveChangesAsync();
             return category;

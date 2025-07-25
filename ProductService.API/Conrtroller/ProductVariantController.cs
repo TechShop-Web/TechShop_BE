@@ -28,25 +28,83 @@ namespace ProductService.API.Controllers
         public async Task<IActionResult> Get(int id)
         {
             var result = await _variantService.GetByIdAsync(id);
-            return result == null ? NotFound() : Ok(result);
+            if (result == null)
+            {
+                // Trả về thông điệp khi không tìm thấy sản phẩm variant
+                var notFoundResponse = new
+                {
+                    message = "Data not found",
+                    data = new List<ProductVariant>() // Hoặc bạn có thể trả về giá trị mặc định khác
+                };
+                return NotFound(notFoundResponse);
+            }
+            return Ok(result);
         }
+
+
+        // GET: api/productvariant/groupwithproduct/{productId}
+        [HttpGet("groupwithproduct/{productId}")]
+        public async Task<IActionResult> GetVariantsByProductIdWithProductName(int productId)
+        {
+            var result = await _variantService.GetVariantsByProductIdWithProductNameAsync(productId);
+
+            if (result == null || !result.Any())
+            {
+                var notFoundResponse = new
+                {
+                    message = "No variants found for this product",
+                    data = new List<object>()
+                };
+                return NotFound(notFoundResponse);
+            }
+
+            return Ok(result);
+        }
+
 
         // POST: api/productvariant/create
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ProductVariant variant)
         {
-            var created = await _variantService.CreateAsync(variant);
-            return Ok(created);
+            try
+            {
+                var createdVariant = await _variantService.CreateAsync(variant);
+                return Ok(createdVariant);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An unexpected error occurred.", message = ex.Message });
+            }
         }
 
         // PUT: api/productvariant/update/{id}
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ProductVariant variant)
         {
-            if (id != variant.Id) return BadRequest();
-            var success = await _variantService.UpdateAsync(variant);
-            return success ? NoContent() : NotFound();
+            if (id != variant.Id) return BadRequest(new { error = "ID mismatch." });
+
+            try
+            {
+                var success = await _variantService.UpdateAsync(variant);
+                if (success)
+                    return NoContent();
+                else
+                    return NotFound(new { error = "No variant found to update" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An unexpected error occurred.", message = ex.Message });
+            }
         }
+
 
         // DELETE: api/productvariant/delete/{id}
         [HttpDelete("delete/{id}")]
@@ -55,5 +113,10 @@ namespace ProductService.API.Controllers
             var success = await _variantService.DeleteAsync(id);
             return success ? NoContent() : NotFound();
         }
+
+
+
+
+
     }
 }
