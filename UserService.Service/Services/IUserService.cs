@@ -1,4 +1,5 @@
 ﻿using UserService.Repository.Models;
+using UserService.Service.DTO;
 
 namespace UserService.Service.Services
 {
@@ -10,6 +11,7 @@ namespace UserService.Service.Services
         Task<bool> UpdateAsync(User user);
         Task<bool> DeleteAsync(int id);
         Task<User> RegisterAsync(User user);
-        Task<User?> LoginAsync(string email, string password);
+        //Task<User?> LoginAsync(string email, string password);
+        Task<LoginResponseDTO?> LoginAsync(LoginDto dto);
     }
 }
