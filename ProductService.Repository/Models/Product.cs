@@ -1,4 +1,6 @@
-﻿namespace ProductService.Repository.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProductService.Repository.Models
 {
     public class Product
     {
@@ -9,8 +11,10 @@
         public DateTime CreatedAt { get; set; }
 
         public int CategoryId { get; set; }
-        public Category? Category { get; set; }
 
+        [JsonIgnore]
+        public Category? Category { get; set; }
+        [JsonIgnore]
         public ICollection<ProductVariant>? Variants { get; set; }
     }
 }

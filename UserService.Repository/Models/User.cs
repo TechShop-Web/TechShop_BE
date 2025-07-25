@@ -4,6 +4,6 @@
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
     public string FullName { get; set; } = "";
-    public string Role { get; set; } = "User";// string:0 Admin | 1 Manager | 2 User
+    public string Role { get; set; } = "User";
     public DateTime CreatedAt { get; set; }
 }
