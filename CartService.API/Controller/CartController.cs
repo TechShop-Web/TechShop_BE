@@ -179,5 +179,32 @@ namespace CartService.API.Controller
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetAllCart()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("User ID cannot be null or empty.");
+                return BadRequest("User ID cannot be null or empty.");
+            }
+            try
+            {
+                var result = await _cartService.GetAllCartAsync(userId);
+                if (!result.Success || result.Data == null || !result.Data.Any())
+                {
+                    _logger.LogWarning("No carts found for user: UserId={UserId}", userId);
+                    return NotFound(result.Message);
+                }
+                _logger.LogInformation("Carts retrieved successfully for user: UserId={UserId}", userId);
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving carts for user: UserId={UserId}", userId);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

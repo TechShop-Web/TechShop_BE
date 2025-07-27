@@ -14,7 +14,7 @@ namespace CartService.Repository.Implementations
         private readonly TechShopCartServiceDbContext _context;
         public CartRepository(TechShopCartServiceDbContext context) : base(context)
         {
-
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         //public Task<CartItem?> GetCartItemsByUserIdAsync(int userId)
@@ -31,7 +31,7 @@ namespace CartService.Repository.Implementations
             {
                 throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
             }
-            return await _context.CartItems
+            return await _context.CartItems.Where(item => item.UserId.ToString() == userId)
                 .ToListAsync();
         }
     }
