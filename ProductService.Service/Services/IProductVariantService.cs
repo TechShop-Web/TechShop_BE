@@ -6,7 +6,7 @@ namespace ProductService.Service.Services
     {
         Task<IEnumerable<ProductVariant>> GetAllAsync();
         //Task<ProductVariant?> GetByIdAsync(int id);
-        Task<dynamic?> GetByIdAsync(int id);
+        Task<ProductVariant> GetByIdAsync(int id);
         Task<ProductVariant> CreateAsync(ProductVariant variant);
         Task<bool> UpdateAsync(ProductVariant variant);
         Task<bool> DeleteAsync(int id);

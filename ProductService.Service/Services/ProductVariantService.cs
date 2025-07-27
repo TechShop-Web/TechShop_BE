@@ -22,7 +22,7 @@ namespace ProductService.Service.Services
         //    return await _unitOfWork.ProductVariantRepository.GetByIdAsync(id);
         //}
 
-        public async Task<dynamic?> GetByIdAsync(int id)
+        public async Task<ProductVariant> GetByIdAsync(int id)
         {
             var variant = await _unitOfWork.ProductVariantRepository.GetByIdAsync(id);
             if (variant == null)
@@ -35,19 +35,20 @@ namespace ProductService.Service.Services
             {
                 return null;
             }
-
-            var result = new
+            var result = new ProductVariant
             {
-                productName = product.Name,
-                productId = product.Id,
-                variant.Id,
-                variant.ConfigLabel,
-                variant.Price,
-                variant.Stock,
-                variant.CreatedAt
+                Id = variant.Id,
+                ProductId = variant.ProductId,
+                ConfigLabel = variant.ConfigLabel,
+                Price = variant.Price,
+                Stock = variant.Stock,
+                CreatedAt = variant.CreatedAt,
             };
 
             return result;
+
+
+
         }
 
 
