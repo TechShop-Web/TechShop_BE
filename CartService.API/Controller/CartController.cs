@@ -29,20 +29,22 @@ namespace CartService.API.Controller
         [HttpPost]
         public async Task<IActionResult> CreateCart([FromBody] CartRequest request)
         {
-            if (request == null || !request.VariantId.HasValue || !request.Quantity.HasValue || !request.UnitPrice.HasValue)
-                return BadRequest("Invalid cart request.");
+            if (request == null)
+                return BadRequest("Cart request cannot be null.");
+
 
             var variantRequest = new VariantRequest
             {
+                ProductId = request.ProductId, // Replace with actual ProductId logic if needed
                 //ProductId = 0, // Replace with actual ProductId logic if needed
-                VariantId = request.VariantId.Value,
-                Quantity = request.Quantity.Value
+                VariantId = request.VariantId,
+                Quantity = request.Quantity
             };
 
             try
             {
                 var variantResponse = await _productClient.CheckVariantAvailabilityAsync(variantRequest);
-                if (!variantResponse.VariantExists || variantResponse.StockQuantity < request.Quantity.Value)
+                if (!variantResponse.VariantExists || variantResponse.StockQuantity < request.Quantity)
                     return BadRequest($"Variant is not available in the requested quantity.");
             }
             catch (RpcException ex)
