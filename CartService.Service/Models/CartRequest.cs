@@ -9,7 +9,7 @@ namespace CartService.Service.Models
 {
     public class CartRequest
     {
-        public int? UserId { get; set; }
+        //public int? UserId { get; set; }
 
         public int ProductId { get; set; }
         public int VariantId { get; set; }

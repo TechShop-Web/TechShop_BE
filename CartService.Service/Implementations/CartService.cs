@@ -27,14 +27,7 @@ namespace CartService.Service.Implementations
             return ApiResponse<object>.Ok(new { ItemId = item.Id }, "Item added successfully.");
         }
 
-        public async Task<ApiResponse<object>> ClearCartAsync(int userId)
-        {
-            var items = await _cartRepository.GetCartItemsByUserIdAsync(userId);
-            _cartRepository.Delete(items);
-            await _unitOfWork.SaveChangesAsync();
-            return ApiResponse<object>.Ok(null, "Cart cleared successfully.");
-        }
-
+ 
         public async Task<ApiResponse<object>> CreateCartAsync(int userId, CartItem cartRequest)
         {
 
@@ -66,13 +59,13 @@ namespace CartService.Service.Implementations
             return cart == null ? ApiResponse<CartItem>.Fail("Cart not found.") : ApiResponse<CartItem>.Ok(cart);
         }
 
-        public async Task<ApiResponse<CartItem>> GetCartsByUserIdAsync(int userId)
+        public async Task<ApiResponse<IEnumerable<CartItem>>> GetAllCartAsync(string userId)
         {
-            var carts = await _cartRepository.GetCartItemsByUserIdAsync(userId);
-            if (carts == null) return ApiResponse<CartItem>.Fail("Carts not found.");
-            return ApiResponse<CartItem>.Ok(carts);
+            var carts = await _cartRepository.GetAllCartAsync(userId);
+            return carts == null || !carts.Any()
+                ? ApiResponse<IEnumerable<CartItem>>.Fail("No carts found for this user.")
+                : ApiResponse<IEnumerable<CartItem>>.Ok(carts.ToList());
         }
-
 
 
         public async Task<ApiResponse<object>> UpdateCartAsync(int userId, CartItem CartRequest)

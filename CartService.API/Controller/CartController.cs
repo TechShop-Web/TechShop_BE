@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductService;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace CartService.API.Controller
 {
@@ -13,15 +14,21 @@ namespace CartService.API.Controller
     [ApiController]
     public class CartController : ControllerBase
     {
-        private readonly ICartService _CartService;
+        private readonly ICartService _cartService;
         private readonly ProductService.ProductService.ProductServiceClient _productClient;
         private readonly UserService.UserService.UserServiceClient _userClient;
+        private readonly ILogger<CartController> _logger;
 
-        public CartController(ICartService CartService, ProductService.ProductService.ProductServiceClient productClient, UserService.UserService.UserServiceClient userClient)
+        public CartController(
+            ICartService cartService,
+            ProductService.ProductService.ProductServiceClient productClient,
+            UserService.UserService.UserServiceClient userClient,
+            ILogger<CartController> logger)
         {
-            _CartService = CartService;
+            _cartService = cartService ?? throw new ArgumentNullException(nameof(cartService));
             _productClient = productClient ?? throw new ArgumentNullException(nameof(productClient));
-            _userClient = userClient;
+            _userClient = userClient ?? throw new ArgumentNullException(nameof(userClient));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // POST: api/Carts
@@ -30,13 +37,14 @@ namespace CartService.API.Controller
         public async Task<IActionResult> CreateCart([FromBody] CartRequest request)
         {
             if (request == null)
+            {
+                _logger.LogWarning("Cart request is null.");
                 return BadRequest("Cart request cannot be null.");
-
+            }
 
             var variantRequest = new VariantRequest
             {
-                ProductId = request.ProductId, // Replace with actual ProductId logic if needed
-                //ProductId = 0, // Replace with actual ProductId logic if needed
+                ProductId = request.ProductId,
                 VariantId = request.VariantId,
                 Quantity = request.Quantity
             };
@@ -45,18 +53,25 @@ namespace CartService.API.Controller
             {
                 var variantResponse = await _productClient.CheckVariantAvailabilityAsync(variantRequest);
                 if (!variantResponse.VariantExists || variantResponse.StockQuantity < request.Quantity)
-                    return BadRequest($"Variant is not available in the requested quantity.");
-            }
-            catch (RpcException ex)
-            {
-                return StatusCode(500, $"gRPC Error: {ex.Status.Detail}");
-            }
+                {
+                    _logger.LogWarning("Variant not available: ProductId={ProductId}, VariantId={VariantId}, RequestedQuantity={Quantity}, Available={Stock}",
+                        request.ProductId, request.VariantId, request.Quantity, variantResponse.StockQuantity);
+                    return BadRequest("Variant is not available in the requested quantity.");
+                }
 
-            try
-            {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int parsedUserId))
+                {
+                    _logger.LogWarning("Invalid user ID from claims.");
                     return BadRequest("Invalid user ID.");
+                }
+
+                var userResponse = await _userClient.CheckUserExistsAsync(new UserService.UserCheckRequest { UserId = parsedUserId });
+                if (!userResponse.Exists)
+                {
+                    _logger.LogWarning("User not found: UserId={UserId}", parsedUserId);
+                    return BadRequest("User not found.");
+                }
 
                 var cartItem = new CartItem
                 {
@@ -66,8 +81,14 @@ namespace CartService.API.Controller
                     UnitPrice = request.UnitPrice,
                     CreatedAt = DateTime.UtcNow
                 };
-                var result = await _CartService.CreateCartAsync(parsedUserId, cartItem);
-                return Ok(result.Data); // Return CartItem
+                var result = await _cartService.CreateCartAsync(parsedUserId, cartItem);
+                _logger.LogInformation("Cart created successfully: CartId={CartId}, UserId={UserId}", cartItem.Id, parsedUserId);
+                return Ok(result.Data);
+            }
+            catch (RpcException ex)
+            {
+                _logger.LogError(ex, "gRPC error while checking variant or user: {Message}", ex.Status.Detail);
+                return StatusCode(500, $"gRPC Error: {ex.Status.Detail}");
             }
             catch (Exception ex)
             {
@@ -76,43 +97,86 @@ namespace CartService.API.Controller
         }
 
         // GET: api/Carts/{id}
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCartById(int id)
         {
             if (id <= 0)
+            {
+                _logger.LogWarning("Invalid Cart ID: {Id}", id);
                 return BadRequest("Invalid Cart ID.");
-            var result = await _CartService.GetCartByIdAsync(id);
-            return result.Success ? Ok(result.Data) : NotFound(result.Message);
-        }
+            }
 
-        // GET: api/Carts/user/{userId}
-        [HttpGet("user/{userId:int}")]
-        public async Task<IActionResult> GetCartsByUserId(int userId)
-        {
-            if (userId <= 0)
-                return BadRequest("Invalid user ID.");
-            var result = await _CartService.GetCartsByUserIdAsync(userId);
-            return result.Success ? Ok(result.Data) : NotFound(result.Message);
-        }
-
-        // PATCH: api/Carts/{id}/cancel
-        [HttpPatch("{id:int}/cancel")]
-        public IActionResult CancelCart(int id)
-        {
-            return Ok("This endpoint is not implemented yet. Please check back later.");
-        }
-
-        [HttpGet("test/{id}")]
-        public async Task<IActionResult> TestUserService(int id)
-        {
             try
             {
-                var userResponse = await _userClient.CheckUserExistsAsync(new UserService.UserCheckRequest { UserId = id });
-                return Ok(userResponse);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int parsedUserId))
+                {
+                    _logger.LogWarning("Invalid user ID from claims.");
+                    return BadRequest("Invalid user ID.");
+                }
+
+                var result = await _cartService.GetCartByIdAsync(id);
+                if (!result.Success)
+                {
+                    _logger.LogWarning("Cart not found: Id={Id}", id);
+                    return NotFound(result.Message);
+                }
+
+                if (result.Data.UserId != parsedUserId)
+                {
+                    _logger.LogWarning("Unauthorized access to cart: CartId={CartId}, UserId={UserId}", id, parsedUserId);
+                    return Unauthorized("You are not authorized to view this cart.");
+                }
+
+                _logger.LogInformation("Cart retrieved successfully: CartId={CartId}, UserId={UserId}", id, parsedUserId);
+                return Ok(result.Data);
             }
-            catch (RpcException ex)
+            catch (Exception ex)
             {
-                return StatusCode(500, $"gRPC Error: {ex.Status.Detail}");
+                _logger.LogError(ex, "Error retrieving cart: CartId={CartId}", id);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+      
+
+   
+
+        // DELETE: api/Carts/{id}
+        [Authorize]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteCart(int id)
+        {
+            if (id <= 0)
+            {
+                _logger.LogWarning("Invalid Cart ID: {Id}", id);
+                return BadRequest("Invalid Cart ID.");
+            }
+
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int parsedUserId))
+                {
+                    _logger.LogWarning("Invalid user ID from claims.");
+                    return BadRequest("Invalid user ID.");
+                }
+
+                var result = await _cartService.DeleteCartAsync(parsedUserId, id);
+                if (!result.Success)
+                {
+                    _logger.LogWarning("Cart not found or unauthorized: CartId={CartId}, UserId={UserId}", id, parsedUserId);
+                    return NotFound(result.Message);
+                }
+
+                _logger.LogInformation("Cart deleted successfully: CartId={CartId}, UserId={UserId}", id, parsedUserId);
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting cart: CartId={CartId}", id);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }
