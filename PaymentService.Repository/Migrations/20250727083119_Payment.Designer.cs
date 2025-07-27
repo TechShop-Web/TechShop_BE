@@ -12,8 +12,8 @@ using PaymentService.Repository.Models;
 namespace PaymentService.Repository.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250725195558_Initial")]
-    partial class Initial
+    [Migration("20250727083119_Payment")]
+    partial class Payment
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,7 +39,7 @@ namespace PaymentService.Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OrderId")
+                    b.Property<int?>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<string>("PaymentMethod")

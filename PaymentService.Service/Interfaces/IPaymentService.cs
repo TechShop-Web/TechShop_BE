@@ -11,7 +11,7 @@ namespace PaymentService.Service.Interfaces
 {
     public interface IPaymentService
     {
-        string CreateVNPayPaymentUrlAsync(CreatePaymentRequest request, HttpContext context);
+        Task<string> CreateVNPayPaymentUrlAsync(CreatePaymentRequest request, HttpContext context);
         Task<VnPayResponseModel> PaymentExecuteAsync(IQueryCollection collections);
         //Task<bool> HandleVNPayReturnAsync(IQueryCollection vnpData);
     }

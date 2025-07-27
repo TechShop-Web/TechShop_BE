@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PaymentService.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Payment : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,7 +17,7 @@ namespace PaymentService.Repository.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: true),
                     PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TransactionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
