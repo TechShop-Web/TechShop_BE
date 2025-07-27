@@ -12,7 +12,7 @@ using OrderService.Repository.ApplicationContext;
 namespace OrderService.Repository.Migrations
 {
     [DbContext(typeof(OrderContext))]
-    [Migration("20250629094353_Init")]
+    [Migration("20250727160944_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -54,6 +54,9 @@ namespace OrderService.Repository.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
