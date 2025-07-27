@@ -1,11 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PaymentService.API.Helpers;
 using PaymentService.Repository.Interfaces;
 using PaymentService.Repository.Models;
-using PaymentService.Repository.Repositories;
 using PaymentService.Service.BusinessModels;
 using PaymentService.Service.Interfaces;
 
@@ -28,7 +25,7 @@ namespace PaymentService.Service.Services
         {
             var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(_configuration["TimeZoneId"]);
             var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
-            var tick = DateTime.Now.Ticks.ToString();
+            //var tick = DateTime.Now.Ticks.ToString();
 
             var pay = new VnPayLibrary();
 
@@ -43,7 +40,7 @@ namespace PaymentService.Service.Services
             pay.AddRequestData("vnp_OrderInfo", "Thanh toan hoa don cho Tech Shop");
             pay.AddRequestData("vnp_OrderType", "other");
             pay.AddRequestData("vnp_ReturnUrl", _configuration["Vnpay:ReturnUrl"]);
-            pay.AddRequestData("vnp_TxnRef", tick);
+            pay.AddRequestData("vnp_TxnRef", request.OrderId.ToString());
 
             var payment = new Payment
             {
@@ -71,7 +68,7 @@ namespace PaymentService.Service.Services
 
             if (!response.Success) return response;
 
-            
+
             //var payment = await _paymentRepository.FirstOrDefaultAsync(p => p.OrderId.ToString() == response.OrderId);
 
             //if (payment != null)

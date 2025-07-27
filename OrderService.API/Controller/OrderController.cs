@@ -43,10 +43,27 @@ namespace OrderService.API.Controller
                 try
                 {
                     var variantResponse = await _productClient.CheckVariantAvailabilityAsync(variantRequest);
-                    if (!variantResponse.VariantExists || variantResponse.StockQuantity < item.Quantity)
+
+                    if (!variantResponse.ProductExists)
+                    {
+                        return BadRequest($"Product {item.ProductName} does not exist.");
+                    }
+
+                    if (!variantResponse.VariantExists)
+                    {
+                        return BadRequest($"Variant {item.VariantName} for product {item.ProductName} does not exist.");
+                    }
+
+                    if (variantResponse.StockQuantity <= 0)
+                    {
+                        return BadRequest($"Variant {item.VariantName} for product {item.ProductName} is out of stock.");
+                    }
+
+                    if (variantResponse.StockQuantity < item.Quantity)
                     {
                         return BadRequest($"Variant {item.VariantName} for product {item.ProductName} is not available in the requested quantity.");
                     }
+
                 }
                 catch (RpcException ex)
                 {
@@ -94,7 +111,7 @@ namespace OrderService.API.Controller
             {
                 return BadRequest("Invalid user ID.");
             }
-            var order = await _orderService.GetOrderByIdAsync(userId);
+            var order = await _orderService.GetOrdersByUserIdAsync(userId);
             if (order == null)
             {
                 return NotFound($"Order with user ID {userId} not found.");
@@ -104,9 +121,43 @@ namespace OrderService.API.Controller
 
         // PUT: api/Order/{id}/cancel
         [HttpPatch("{id:int}/cancel")]
-        public IActionResult CancelOrder(int id)
+        public async Task<IActionResult> CancelOrder(int id)
         {
-            return Ok("This endpoint is not implemented yet. Please check back later.");
+            try
+            {
+                var result = await _orderService.CancelOrderAsync(id, "User requested cancellation.");
+                if (!result.Success)
+                {
+                    return BadRequest(result.Message);
+                }
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        // PUT: api/Order/{id}/status
+        [HttpPatch("{id:int}/status")]
+        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                return BadRequest("Status cannot be null or empty.");
+            }
+            try
+            {
+                var result = await _orderService.UpdateOrderStatusAsync(id, status);
+                if (!result.Success)
+                {
+                    return BadRequest(result.Message);
+                }
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
         [HttpGet("test/{id}")]
         public async Task<IActionResult> TestUserService(int id)
