@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProductService.API.Services.Grpc;
 using ProductService.Repository.Frameworks;
 using ProductService.Repository.Repositories;
 using ProductService.Service.Services;
@@ -22,7 +23,7 @@ builder.Services.AddScoped<IProductService, ProductService.Service.Services.Prod
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
 
-
+builder.Services.AddGrpc();
 
 // 4. Thêm Controller + Swagger
 builder.Services.AddControllers();

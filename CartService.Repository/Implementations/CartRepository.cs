@@ -17,14 +17,22 @@ namespace CartService.Repository.Implementations
 
         }
 
-        public Task<CartItem?> GetCartItemsByUserIdAsync(int userId)
-        {
-            if (userId <= 0)
-            {
-                throw new ArgumentException("User ID must be a positive integer.", nameof(userId));
-            }
+        //public Task<CartItem?> GetCartItemsByUserIdAsync(int userId)
+        //{
+        //    if (userId <= 0)
+        //    {
+        //        throw new ArgumentException("User ID must be a positive integer.", nameof(userId));
+        //    }
 
-            return _context.CartItems.FirstOrDefaultAsync(item => item.UserId == userId);
+        //    return _context.CartItems.FirstOrDefaultAsync(item => item.UserId == userId);
+        //}
+        public async Task<IEnumerable<CartItem>> GetAllCartAsync(string userId)
+        {   if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+            }
+            return await _context.CartItems
+                .ToListAsync();
         }
     }
 }

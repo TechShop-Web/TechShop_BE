@@ -10,7 +10,8 @@ namespace CartService.Repository.Interfaces
 {
     public interface ICartRepository: IGenericRepository<CartItem>
     {
-        Task<CartItem> GetCartItemsByUserIdAsync(int userId);
+        //Task<CartItem> GetCartItemsByUserIdAsync(int userId);
+        Task<IEnumerable<CartItem>> GetAllCartAsync(string userId);
 
     }
 }

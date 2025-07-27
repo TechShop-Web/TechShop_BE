@@ -23,7 +23,7 @@ public partial class TechShopCartServiceDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__CartItem__3214EC07100864B5");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(10, 2)");
         });
