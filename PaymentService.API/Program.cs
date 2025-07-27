@@ -1,9 +1,25 @@
+using Microsoft.EntityFrameworkCore;
+using PaymentService.Repository.Interfaces;
+using PaymentService.Repository.Models;
+using PaymentService.Repository.Repositories;
+using PaymentService.Service;
+using PaymentService.Service.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.Configure<VnPayModel>(builder.Configuration.GetSection("VNPay"));
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService.Service.Services.PaymentService>();
+builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 var app = builder.Build();
 
@@ -35,6 +51,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+app.MapControllers();
 
 app.Run();
 
