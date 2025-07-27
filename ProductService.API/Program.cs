@@ -35,6 +35,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGrpcService<ProductGrpcService>();
 app.UseAuthorization();
 
 app.MapGrpcService<ProductGrpcService>();
