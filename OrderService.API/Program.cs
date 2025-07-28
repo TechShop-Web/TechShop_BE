@@ -40,6 +40,7 @@ builder.Services.AddGrpcClient<UserService.UserService.UserServiceClient>(option
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrderService, OrderService.Service.Implementations.OrderService>();
+builder.Services.AddScoped<IOrderStatisticsService, OrderStatisticsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundWorker>();
