@@ -45,5 +45,38 @@ namespace ProductService.API.Services.Grpc
                 Error = ""
             };
         }
+        public override async Task<UpdateProductStockResponse> UpdateProductStock(UpdateProductStockRequest request, ServerCallContext context)
+        {
+            foreach (var update in request.Updates)
+            {
+                var variant = await _variantService.GetByIdAsync(update.VariantId);
+                if (variant == null)
+                {
+                    return new UpdateProductStockResponse
+                    {
+                        Success = false,
+                        Message = $"Variant with ID {update.VariantId} not found."
+                    };
+                }
+
+                if (variant.Stock < update.Quantity)
+                {
+                    return new UpdateProductStockResponse
+                    {
+                        Success = false,
+                        Message = $"Insufficient stock for Variant ID {update.VariantId}."
+                    };
+                }
+
+                variant.Stock -= update.Quantity;
+                await _variantService.UpdateAsync(variant);
+            }
+
+            return new UpdateProductStockResponse
+            {
+                Success = true,
+                Message = "Stock updated successfully."
+            };
+        }
     }
 }

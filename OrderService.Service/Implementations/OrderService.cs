@@ -7,6 +7,7 @@ using OrderService.Repository.Interfaces;
 using OrderService.Repository.Models;
 using OrderService.Service.Interfaces;
 using OrderService.Service.Models;
+using ProductService;
 
 namespace OrderService.Service.Implementations
 {
@@ -18,7 +19,8 @@ namespace OrderService.Service.Implementations
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
         private readonly UserService.UserService.UserServiceClient _userClient;
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, OrderContext context, IBackgroundTaskQueue taskQueue, IEmailService emailService, UserService.UserService.UserServiceClient userClient)
+        private readonly ProductService.ProductService.ProductServiceClient _productClient;
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, OrderContext context, IBackgroundTaskQueue taskQueue, IEmailService emailService, UserService.UserService.UserServiceClient userClient, ProductService.ProductService.ProductServiceClient productClient)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -26,6 +28,7 @@ namespace OrderService.Service.Implementations
             _taskQueue = taskQueue ?? throw new ArgumentNullException(nameof(taskQueue));
             _emailService = emailService;
             _userClient = userClient;
+            _productClient = productClient;
         }
         private async Task<int> GenerateNonDuplicateVnpOrderIdAsync(OrderContext context)
         {
@@ -216,6 +219,7 @@ namespace OrderService.Service.Implementations
             {
                 var order = await _unitOfWork.Orders
                     .Query()
+                    .Include(o => o.OrderItems)
                     .FirstOrDefaultAsync(o => o.OrderId == orderId);
                 if (order == null)
                 {
@@ -233,6 +237,26 @@ namespace OrderService.Service.Implementations
                 {
                     throw new Exception("Failed to update the order status. Please try again.");
                 }
+                Console.WriteLine("Updating stock...");
+                if (orderStatus == OrderStatus.Confirmed)
+                {
+                    var stockUpdates = order.OrderItems.Select(item => new ProductStockUpdate
+                    {
+                        ProductId = item.ProductId,
+                        VariantId = item.VariantId,
+                        Quantity = item.Quantity
+                    }).ToList();
+
+                    var grpcRequest = new UpdateProductStockRequest { Updates = { stockUpdates } };
+
+                    var grpcResponse = await _productClient.UpdateProductStockAsync(grpcRequest);
+
+                    if (!grpcResponse.Success)
+                    {
+                        throw new Exception($"Failed to update product stock: {grpcResponse.Message}");
+                    }
+                }
+
 
                 _taskQueue.QueueBackgroundWorkItem(async serviceProvider =>
                 {
