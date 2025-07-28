@@ -4,6 +4,7 @@ package ProductService;
 
 service ProductService {
   rpc CheckVariantAvailability (VariantRequest) returns (VariantResponse) {}
+  rpc UpdateProductStock (UpdateProductStockRequest) returns (UpdateProductStockResponse);
 }
 
 message VariantRequest {
@@ -17,4 +18,19 @@ message VariantResponse {
   bool variant_exists = 2;
   int32 stock_quantity = 3;
   string error = 4;
+}
+
+message UpdateProductStockRequest {
+    repeated ProductStockUpdate updates = 1;
+}
+
+message ProductStockUpdate {
+    int32 productId = 1;
+    int32 variantId = 2;
+    int32 quantity = 3;
+}
+
+message UpdateProductStockResponse {
+    bool success = 1;
+    string message = 2;
 }
