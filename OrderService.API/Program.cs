@@ -7,9 +7,11 @@ using OrderService.API.Middleware;
 using OrderService.Repository.ApplicationContext;
 using OrderService.Repository.Implementations;
 using OrderService.Repository.Interfaces;
+using OrderService.Service.Implementations;
 using OrderService.Service.Interfaces;
 using OrderService.Service.Mapper;
 using System.Text;
+using BackgroundWorker = OrderService.Service.Implementations.BackgroundWorker;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -38,6 +40,9 @@ builder.Services.AddGrpcClient<UserService.UserService.UserServiceClient>(option
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrderService, OrderService.Service.Implementations.OrderService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddHostedService<BackgroundWorker>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddControllers();

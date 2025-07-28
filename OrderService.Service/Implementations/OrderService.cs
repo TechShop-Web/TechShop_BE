@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OrderService.Repository.ApplicationContext;
 using OrderService.Repository.Enum;
 using OrderService.Repository.Interfaces;
@@ -13,12 +14,18 @@ namespace OrderService.Service.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly OrderContext _context;
+        private readonly IBackgroundTaskQueue _taskQueue;
+        private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, OrderContext context)
+        private readonly UserService.UserService.UserServiceClient _userClient;
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, OrderContext context, IBackgroundTaskQueue taskQueue, IEmailService emailService, UserService.UserService.UserServiceClient userClient)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _taskQueue = taskQueue ?? throw new ArgumentNullException(nameof(taskQueue));
+            _emailService = emailService;
+            _userClient = userClient;
         }
         private async Task<int> GenerateNonDuplicateVnpOrderIdAsync(OrderContext context)
         {
@@ -226,6 +233,46 @@ namespace OrderService.Service.Implementations
                 {
                     throw new Exception("Failed to update the order status. Please try again.");
                 }
+
+                _taskQueue.QueueBackgroundWorkItem(async serviceProvider =>
+                {
+                    using var scope = serviceProvider.CreateScope();
+
+                    var scopedUnitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+
+                    var scopedOrder = await scopedUnitOfWork.Orders
+                        .Query()
+                        .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+                    var userResponse = await _userClient.CheckUserExistsAsync(new UserService.UserCheckRequest
+                    {
+                        UserId = order.UserId
+                    });
+
+
+                    if (userResponse.Email != null)
+                    {
+                        var subject = "Order Status Updated";
+                        var htmlBody = $@"
+                                    <h2>Order Update</h2>
+                                    <p>Your order (ID: <strong>{scopedOrder.OrderId}</strong>) has been updated.</p>
+                                    <p>Status: <strong>{scopedOrder.Status.ToString()}</strong></p>
+                                    <p>Updated At: {DateTime.UtcNow:yyyy-MM-dd HH:mm}</p>
+                                    <br/>
+                                    <p>Thank you for shopping with us.</p>
+                                    <p>- TechVN Support Team</p>";
+                        try
+                        {
+                            await emailService.SendEmailAsync(userResponse.Email, subject, htmlBody);
+                        }
+                        catch (Exception emailEx)
+                        {
+                            throw new Exception("Failed to send email notification.", emailEx);
+                        }
+                    }
+                });
+
                 return ApiResponse<object>.Ok(new { orderId = order.OrderId, status = order.Status }, "Order status updated successfully.");
             }
             catch (Exception ex)
