@@ -15,11 +15,14 @@ namespace OrderService.API.Controller
         private readonly IOrderService _orderService;
         private readonly ProductService.ProductService.ProductServiceClient _productClient;
         private readonly UserService.UserService.UserServiceClient _userClient;
-        public OrderController(IOrderService orderService, ProductService.ProductService.ProductServiceClient productClient, UserService.UserService.UserServiceClient userClient)
+        private readonly IOrderStatisticsService _statisticsService;
+
+        public OrderController(IOrderService orderService, ProductService.ProductService.ProductServiceClient productClient, UserService.UserService.UserServiceClient userClient, IOrderStatisticsService statisticsService)
         {
             _orderService = orderService;
             _productClient = productClient ?? throw new ArgumentNullException(nameof(productClient));
             _userClient = userClient;
+            _statisticsService = statisticsService ?? throw new ArgumentNullException(nameof(statisticsService));
         }
 
         // POST: api/Order
@@ -175,6 +178,12 @@ namespace OrderService.API.Controller
                 return StatusCode(500, $"gRPC Error: {ex.Status.Detail}");
             }
 
+        }
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _statisticsService.GetOrderStatisticsAsync(startDate, endDate, pageIndex, pageSize);
+            return Ok(result);
         }
     }
 }
