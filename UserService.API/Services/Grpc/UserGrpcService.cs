@@ -18,12 +18,14 @@ namespace UserService.API.Services.Grpc
                 return new UserCheckResponse
                 {
                     Exists = false,
+                    Email = user?.Email ?? "",
                     Error = "User not found"
                 };
             }
             return new UserCheckResponse
             {
                 Exists = true,
+                Email = user?.Email ?? "",
                 Error = ""
             };
         }
