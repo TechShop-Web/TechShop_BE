@@ -9,7 +9,7 @@ namespace PaymentService.Service.BusinessModels
     public class CreatePaymentRequest
     {
         public int OrderId { get; set; }
-        public string PaymentMethod { get; set; }
+        public int PaymentMethod { get; set; }
         public float Amount { get; set; }
     }
 }

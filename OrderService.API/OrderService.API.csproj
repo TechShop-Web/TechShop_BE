@@ -6,11 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 	<ItemGroup>
-		<Protobuf Include="Protos\product.proto" GrpcServices="Client" />
+		<Protobuf Include="..\SharedProtos\Protos\product.proto" GrpcServices="Client" />
+		<Protobuf Include="..\SharedProtos\Protos\order.proto" GrpcServices="Both" />
 	</ItemGroup>
   <ItemGroup>
-	  <PackageReference Include="Grpc.Net.Client" Version="2.51.0" />
-	  <PackageReference Include="Grpc.Net.ClientFactory" Version="2.51.0" />
+	  <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+	  <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
+	  <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+	  <PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
+	  <PackageReference Include="Grpc.Tools" Version="2.72.0">
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	    <PrivateAssets>all</PrivateAssets>
+	  </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">

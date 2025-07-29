@@ -5,6 +5,7 @@ using PaymentService.Repository.Repositories;
 using PaymentService.Service;
 using PaymentService.Service.Interfaces;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,6 +31,22 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader();
         });
 });
+
+builder.Services.AddGrpcClient<OrderService.Grpc.OrderService.OrderServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["Services:OrderService:GrpcUrl"]);
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    var handler = new HttpClientHandler();
+    if (builder.Environment.IsDevelopment())
+    {
+        handler.ServerCertificateCustomValidationCallback =
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+    }
+    return handler;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

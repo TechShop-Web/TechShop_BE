@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OrderService.API.Middleware;
+using OrderService.API.Services;
 using OrderService.Repository.ApplicationContext;
 using OrderService.Repository.Implementations;
 using OrderService.Repository.Interfaces;
@@ -40,6 +41,9 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrderService, OrderService.Service.Implementations.OrderService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
 builder.Services.AddControllers();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -149,6 +153,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.MapGrpcService<OrderGrpcService>();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 

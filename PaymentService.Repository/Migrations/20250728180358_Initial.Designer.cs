@@ -12,8 +12,8 @@ using PaymentService.Repository.Models;
 namespace PaymentService.Repository.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250727083119_Payment")]
-    partial class Payment
+    [Migration("20250728180358_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

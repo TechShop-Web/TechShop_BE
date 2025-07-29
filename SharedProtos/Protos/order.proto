@@ -1,0 +1,33 @@
+syntax = "proto3";
+option csharp_namespace = "OrderService.Grpc";
+package OrderService;
+
+service OrderService {
+  rpc GetOrder (GetOrderRequest) returns (GetOrderResponse);
+}
+
+message GetOrderRequest {
+  int32 order_id = 1;
+}
+
+message GetOrderResponse {
+  int32 id = 1;
+  int32 order_id = 2;
+  int32 user_id = 3;
+  string order_number = 4;
+  string status = 5;
+  double subtotal = 6;
+  double shipping_cost = 7;
+  double total_amount = 8;
+  string shipping_address = 9;
+  string shipping_method = 10;
+  string notes = 11;
+  bool is_cancelled = 12;
+  string cancelled_reason = 13;
+  string cancelled_at = 14;
+  string confirmed_at = 15;
+  string shipped_at = 16;
+  string delivered_at = 17;
+  string created_at = 18;
+  string updated_at = 19;
+}

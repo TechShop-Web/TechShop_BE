@@ -11,6 +11,7 @@ namespace PaymentService.Service.Services
 {
     public class PaymentService : IPaymentService
     {
+
         private readonly IPaymentRepository _paymentRepository;
 
         private readonly IConfiguration _configuration;
@@ -25,10 +26,8 @@ namespace PaymentService.Service.Services
         {
             var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(_configuration["TimeZoneId"]);
             var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
-            //var tick = DateTime.Now.Ticks.ToString();
 
             var pay = new VnPayLibrary();
-
             pay.AddRequestData("vnp_Version", _configuration["Vnpay:Version"]);
             pay.AddRequestData("vnp_Command", _configuration["Vnpay:Command"]);
             pay.AddRequestData("vnp_TmnCode", _configuration["Vnpay:TmnCode"]);
@@ -44,9 +43,9 @@ namespace PaymentService.Service.Services
 
             var payment = new Payment
             {
-                // OrderId = request.OrderId,
-                PaymentMethod = "VnPay",
-                PaymentStatus = "Pending",
+                OrderId = request.OrderId,
+                PaymentMethod = (Repository.Enums.PaymentMethod)request.PaymentMethod,
+                PaymentStatus = Repository.Enums.PaymentStatus.PENDING,
                 TransactionId = null,
                 Amount = request.Amount,
                 CreatedAt = timeNow,
