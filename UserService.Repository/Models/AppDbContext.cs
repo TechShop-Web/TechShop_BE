@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using UserService.Repository.Configurations;
 
 namespace UserService.Repository.Models
 {
@@ -13,6 +14,9 @@ namespace UserService.Repository.Models
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             modelBuilder.Entity<User>().Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+
         }
     }
 }

@@ -5,10 +5,11 @@ using CartService.Repository.Models;
 using CartService.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using OrderService.Repository.Interfaces;
 using System.Security.Claims;
 using System.Text;
 
@@ -17,38 +18,42 @@ var config = builder.Configuration;
 
 builder.Services.AddGrpcClient<ProductService.ProductService.ProductServiceClient>(options =>
 {
-    var productServiceUrl = config["GrpcSettings:ProductServiceUrl"];
-    if (string.IsNullOrEmpty(productServiceUrl))
-    {
-        throw new InvalidOperationException("The ProductServiceUrl configuration is missing or empty.");
-    }
-    options.Address = new Uri(productServiceUrl);
-});
-builder.Services.AddGrpcClient<UserService.UserService.UserServiceClient>(options =>
+    options.Address = new Uri(config["GrpcSettings:ProductServiceUrl"]);
+    Console.WriteLine("GRPC ProductServiceUrl: " + config["GrpcSettings:ProductServiceUrl"]);
+
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
 {
-    var userServiceUrl = config["GrpcSettings:UserServiceUrl"];
-    if (string.IsNullOrEmpty(userServiceUrl))
+    return new SocketsHttpHandler
     {
-        throw new InvalidOperationException("The UserServiceUrl configuration is missing or empty.");
-    }
-    options.Address = new Uri(userServiceUrl);
+        EnableMultipleHttp2Connections = true
+    };
 });
 
-// Database context
+
+builder.Services.AddGrpcClient<UserService.UserService.UserServiceClient>(options =>
+{
+    options.Address = new Uri(config["GrpcSettings:UserServiceUrl"]);
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new SocketsHttpHandler
+    {
+        EnableMultipleHttp2Connections = true
+    };
+});
+
 builder.Services.AddDbContext<TechShopCartServiceDbContext>(options =>
     options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
 // Dependency injection
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped(typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICartService, CartService.Service.Implementations.CartService>();
-builder.Services.AddScoped<ICartRepository, CartRepository>();//builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 
-// Controllers
 builder.Services.AddControllers();
 
-
-// API behavior
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -68,53 +73,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-// Authentication
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuer = true,
-//            ValidateAudience = true,
-//            ValidateLifetime = true,
-//            ClockSkew = TimeSpan.Zero,
-//            ValidateIssuerSigningKey = true,
-//            ValidIssuer = config["JWT:Issuer"],
-//            ValidAudience = config["JWT:Audience"],
-//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:Key"]))
-//        };
-
-//        options.Events = new JwtBearerEvents
-//        {
-//            OnChallenge = context =>
-//            {
-//                context.HandleResponse();
-//                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-//                context.Response.ContentType = "application/json";
-
-//                var result = new
-//                {
-//                    errorCode = "HB40101",
-//                    message = "Token missing or invalid"
-//                };
-
-//                return context.Response.WriteAsJsonAsync(result);
-//            },
-//            OnForbidden = context =>
-//            {
-//                context.Response.StatusCode = 403;
-//                context.Response.ContentType = "application/json";
-
-//                var result = new
-//                {
-//                    errorCode = "HB40301",
-//                    message = "Permission denied"
-//                };
-
-//                return context.Response.WriteAsJsonAsync(result);
-//            }
-//        };
-//    });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -146,38 +104,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new OpenApiInfo { Title = "G-Coffee API", Version = "v1" });
-//    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-//    {
-//        In = ParameterLocation.Header,
-//        Description = "Please enter JWT with Bearer into field",
-//        Name = "Authorization",
-//        Type = SecuritySchemeType.Http,
-//        Scheme = "bearer",
-//        BearerFormat = "JWT"
-//    });
-//    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-//    {
-//        {
-//            new OpenApiSecurityScheme
-//            {
-//                Reference = new OpenApiReference
-//                {
-//                    Type = ReferenceType.SecurityScheme,
-//                    Id = "Bearer"
-//                }
-//            },
-//            new string[] {}
-//        }
-//    });
-//});
 
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy("CartService is running"))
+    .AddSqlServer(
+        config.GetConnectionString("DefaultConnection") ?? "Server=sqlserver;Database=TechShop_CartServiceDB;User Id=sa;Password=12345;TrustServerCertificate=True;",
+        name: "database",
+        timeout: TimeSpan.FromSeconds(30));
+
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "CartService API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -202,6 +140,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -215,8 +154,46 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Middleware pipeline
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TechShopCartServiceDbContext>();
+    try
+    {
+        Console.WriteLine("Starting Cart database migration...");
+        var retryCount = 0;
+        while (retryCount < 10)
+        {
+            try
+            {
+                await dbContext.Database.CanConnectAsync();
+                Console.WriteLine("Cart database connection successful.");
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                Console.WriteLine($"Cart database connection attempt {retryCount}/10 failed: {ex.Message}");
+                await Task.Delay(5000);
+            }
+        }
+
+        if (retryCount < 10)
+        {
+            await dbContext.Database.MigrateAsync();
+            Console.WriteLine("Cart database migration completed successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to connect to Cart database after 10 attempts.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while migrating the Cart database: {ex.Message}");
+    }
+}
+
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -227,6 +204,28 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            service = "CartService",
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                exception = x.Value.Exception?.Message,
+                duration = x.Value.Duration.ToString()
+            })
+        };
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+    }
+});
+
 app.MapControllers();
 
 app.Run();

@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "TechShop123!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+  # User Service
+  userservice:
+    build:
+      context: .
+      dockerfile: UserService.API/Dockerfile
+    container_name: userservice
+    ports:
+      - "8001:8080"  
+      - "8011:8081" 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__Default=Server=sqlserver;Database=TechShop_UserDb;User Id=sa;Password=TechShop123!;TrustServerCertificate=True;
+      - Jwt__Key=this_is_a_super_secret_key_123456
+      - Jwt__Issuer=TechShop
+      - Jwt__Audience=TechShopUser
+    depends_on:
+      - sqlserver
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+  # Product Service
+  productservice:
+    build:
+      context: .
+      dockerfile: ProductService.API/Dockerfile
+    container_name: productservice
+    ports:
+      - "8002:8080"  
+      - "8012:8081" 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TechShopProductDB;User Id=sa;Password=TechShop123!;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+  # Cart Service
+  cartservice:
+    build:
+      context: .
+      dockerfile: CartService.API/Dockerfile
+    container_name: cartservice
+    ports:
+      - "8003:8080"
+      - "8013:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TechShop_CartServiceDB;User Id=sa;Password=TechShop123!;TrustServerCertificate=True;
+      - GrpcSettings__ProductServiceUrl=http://productservice:8081
+      - GrpcSettings__UserServiceUrl=http://userservice:8081
+      - Jwt__Key=this_is_a_super_secret_key_123456
+      - Jwt__Issuer=TechShop
+      - Jwt__Audience=TechShopUser
+    depends_on:
+      - sqlserver
+      - productservice
+      - userservice
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+  # Order Service
+  orderservice:
+    build:
+      context: .
+      dockerfile: OrderService.API/Dockerfile
+    container_name: orderservice
+    ports:
+      - "8004:8080"
+      - "8014:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TechShop_OrderServiceDB;User Id=sa;Password=TechShop123!;TrustServerCertificate=True;
+      - GrpcSettings__ProductServiceUrl=http://productservice:8081
+      - GrpcSettings__UserServiceUrl=http://userservice:8081
+      - Jwt__Key=this_is_a_super_secret_key_123456
+      - Jwt__Issuer=TechShop
+      - Jwt__Audience=TechShopUser
+    depends_on:
+      - sqlserver
+      - productservice
+      - userservice
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+  # Payment Service
+  paymentservice:
+    build:
+      context: .
+      dockerfile: PaymentService.API/Dockerfile
+    container_name: paymentservice
+    ports:
+      - "8005:8080"
+      - "8015:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TechShopPaymentDB;User Id=sa;Password=TechShop123!;TrustServerCertificate=True;
+      - GrpcSettings__OrderServiceUrl=http://orderservice:8081
+      - VNPay__TmnCode=FAVYT6L3
+      - VNPay__HashSecret=FEU7J8CLUV586BLYLY8FPVE9MHYI3MFI
+      - VNPay__BaseUrl=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      - VNPay__ReturnUrl=http://localhost:5173/vnpay-return
+      - VNPay__Command=pay
+      - VNPay__CurrCode=VND
+      - VNPay__Version=2.1.0
+      - VNPay__Locale=vn
+    depends_on:
+      - sqlserver
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+  # API Gateway
+  apigateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    container_name: apigateway
+    ports:
+      - "8000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Jwt__Key=this_is_a_super_secret_key_123456
+      - Jwt__Issuer=TechShop
+      - Jwt__Audience=TechShopUser
+    depends_on:
+      - userservice
+      - productservice
+      - cartservice
+      - orderservice
+      - paymentservice
+    networks:
+      - techshop-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+
+networks:
+  techshop-network:
+    driver: bridge

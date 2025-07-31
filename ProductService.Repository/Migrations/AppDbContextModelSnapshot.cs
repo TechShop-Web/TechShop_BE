@@ -40,6 +40,43 @@ namespace ProductService.Repository.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Laptop"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Smartphone"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Tablet"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Smartwatch"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Headphones"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Gaming"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Accessories"
+                        });
                 });
 
             modelBuilder.Entity("ProductService.Repository.Models.Product", b =>
@@ -73,6 +110,188 @@ namespace ProductService.Repository.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Brand = "Apple",
+                            CategoryId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Apple MacBook Air với chip M2 mạnh mẽ, thiết kế siêu mỏng nhẹ",
+                            Name = "MacBook Air M2"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Brand = "Dell",
+                            CategoryId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Laptop Dell XPS 13 với màn hình InfinityEdge và hiệu năng vượt trội",
+                            Name = "Dell XPS 13"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Brand = "ASUS",
+                            CategoryId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Laptop gaming ASUS ROG với AMD Ryzen và RTX 4060",
+                            Name = "ASUS ROG Zephyrus G14"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Brand = "MSI",
+                            CategoryId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Laptop gaming MSI với Intel Core i5 và GTX 1650",
+                            Name = "MSI Gaming GF63"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Brand = "Lenovo",
+                            CategoryId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Laptop doanh nhân Lenovo ThinkPad siêu nhẹ và bền bỉ",
+                            Name = "Lenovo ThinkPad X1 Carbon"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Brand = "Apple",
+                            CategoryId = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "iPhone 15 Pro với chip A17 Pro và camera chuyên nghiệp",
+                            Name = "iPhone 15 Pro"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Brand = "Samsung",
+                            CategoryId = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Samsung Galaxy S24 Ultra với bút S Pen và camera 200MP",
+                            Name = "Samsung Galaxy S24 Ultra"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Brand = "Xiaomi",
+                            CategoryId = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Xiaomi 13T Pro với Dimensity 9200+ và camera Leica",
+                            Name = "Xiaomi 13T Pro"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Brand = "OPPO",
+                            CategoryId = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "OPPO Find X6 Pro với camera Hasselblad và sạc nhanh 100W",
+                            Name = "OPPO Find X6 Pro"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Brand = "Google",
+                            CategoryId = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Google Pixel 8 Pro với AI photography và chip Tensor G3",
+                            Name = "Google Pixel 8 Pro"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Brand = "Apple",
+                            CategoryId = 3,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "iPad Pro 12.9 inch với chip M2 và màn hình Liquid Retina XDR",
+                            Name = "iPad Pro 12.9"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Brand = "Samsung",
+                            CategoryId = 3,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Samsung Galaxy Tab S9 với màn hình Dynamic AMOLED 2X",
+                            Name = "Samsung Galaxy Tab S9"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Brand = "Microsoft",
+                            CategoryId = 3,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Microsoft Surface Pro 9 2-in-1 laptop tablet với Windows 11",
+                            Name = "Microsoft Surface Pro 9"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Brand = "Apple",
+                            CategoryId = 4,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Apple Watch Series 9 với chip S9 và màn hình Always-On Retina",
+                            Name = "Apple Watch Series 9"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Brand = "Samsung",
+                            CategoryId = 4,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Samsung Galaxy Watch6 với tính năng theo dõi sức khỏe toàn diện",
+                            Name = "Samsung Galaxy Watch6"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Brand = "Apple",
+                            CategoryId = 5,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "AirPods Pro thế hệ 2 với chip H2 và chống ồn chủ động",
+                            Name = "AirPods Pro 2"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Brand = "Sony",
+                            CategoryId = 5,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Tai nghe Sony WH-1000XM5 với chống ồn hàng đầu",
+                            Name = "Sony WH-1000XM5"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Brand = "Bose",
+                            CategoryId = 5,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Tai nghe Bose QC45 với chống ồn tuyệt vời và âm thanh cân bằng",
+                            Name = "Bose QuietComfort 45"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Brand = "Sony",
+                            CategoryId = 6,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Sony PlayStation 5 console với SSD tốc độ cao",
+                            Name = "PlayStation 5"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Brand = "Nintendo",
+                            CategoryId = 6,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Nintendo Switch phiên bản OLED với màn hình 7 inch",
+                            Name = "Nintendo Switch OLED"
+                        });
                 });
 
             modelBuilder.Entity("ProductService.Repository.Models.ProductVariant", b =>
@@ -107,6 +326,458 @@ namespace ProductService.Repository.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductVariants");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ConfigLabel = "8GB RAM, 256GB SSD - Midnight",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 32990000m,
+                            ProductId = 1,
+                            Stock = 15
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ConfigLabel = "8GB RAM, 512GB SSD - Silver",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 39990000m,
+                            ProductId = 1,
+                            Stock = 10
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ConfigLabel = "16GB RAM, 512GB SSD - Space Gray",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 46990000m,
+                            ProductId = 1,
+                            Stock = 8
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ConfigLabel = "Intel i5, 8GB RAM, 256GB SSD",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 25990000m,
+                            ProductId = 2,
+                            Stock = 12
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ConfigLabel = "Intel i7, 16GB RAM, 512GB SSD",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 34990000m,
+                            ProductId = 2,
+                            Stock = 7
+                        },
+                        new
+                        {
+                            Id = 6,
+                            ConfigLabel = "Ryzen 7, 16GB RAM, RTX 4060",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 42990000m,
+                            ProductId = 3,
+                            Stock = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ConfigLabel = "Ryzen 9, 32GB RAM, RTX 4070",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 52990000m,
+                            ProductId = 3,
+                            Stock = 4
+                        },
+                        new
+                        {
+                            Id = 8,
+                            ConfigLabel = "Intel i5, 8GB RAM, GTX 1650",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 18990000m,
+                            ProductId = 4,
+                            Stock = 10
+                        },
+                        new
+                        {
+                            Id = 9,
+                            ConfigLabel = "Intel i7, 16GB RAM, RTX 3050",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 23990000m,
+                            ProductId = 4,
+                            Stock = 8
+                        },
+                        new
+                        {
+                            Id = 10,
+                            ConfigLabel = "Intel i7, 16GB RAM, 512GB SSD",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 45990000m,
+                            ProductId = 5,
+                            Stock = 7
+                        },
+                        new
+                        {
+                            Id = 11,
+                            ConfigLabel = "Intel i7, 32GB RAM, 1TB SSD",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 55990000m,
+                            ProductId = 5,
+                            Stock = 5
+                        },
+                        new
+                        {
+                            Id = 12,
+                            ConfigLabel = "128GB - Natural Titanium",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 28990000m,
+                            ProductId = 6,
+                            Stock = 25
+                        },
+                        new
+                        {
+                            Id = 13,
+                            ConfigLabel = "256GB - Blue Titanium",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 33990000m,
+                            ProductId = 6,
+                            Stock = 20
+                        },
+                        new
+                        {
+                            Id = 14,
+                            ConfigLabel = "512GB - White Titanium",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 41990000m,
+                            ProductId = 6,
+                            Stock = 15
+                        },
+                        new
+                        {
+                            Id = 15,
+                            ConfigLabel = "1TB - Black Titanium",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 49990000m,
+                            ProductId = 6,
+                            Stock = 10
+                        },
+                        new
+                        {
+                            Id = 16,
+                            ConfigLabel = "256GB - Titanium Black",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 31990000m,
+                            ProductId = 7,
+                            Stock = 18
+                        },
+                        new
+                        {
+                            Id = 17,
+                            ConfigLabel = "512GB - Titanium Violet",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 37990000m,
+                            ProductId = 7,
+                            Stock = 12
+                        },
+                        new
+                        {
+                            Id = 18,
+                            ConfigLabel = "1TB - Titanium Gray",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 45990000m,
+                            ProductId = 7,
+                            Stock = 6
+                        },
+                        new
+                        {
+                            Id = 19,
+                            ConfigLabel = "256GB - Black",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 12990000m,
+                            ProductId = 8,
+                            Stock = 22
+                        },
+                        new
+                        {
+                            Id = 20,
+                            ConfigLabel = "512GB - Blue",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 15990000m,
+                            ProductId = 8,
+                            Stock = 16
+                        },
+                        new
+                        {
+                            Id = 21,
+                            ConfigLabel = "512GB - Green",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 15990000m,
+                            ProductId = 8,
+                            Stock = 14
+                        },
+                        new
+                        {
+                            Id = 22,
+                            ConfigLabel = "256GB - Gold",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 22990000m,
+                            ProductId = 9,
+                            Stock = 14
+                        },
+                        new
+                        {
+                            Id = 23,
+                            ConfigLabel = "512GB - Brown",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 26990000m,
+                            ProductId = 9,
+                            Stock = 10
+                        },
+                        new
+                        {
+                            Id = 24,
+                            ConfigLabel = "128GB - Obsidian",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 24990000m,
+                            ProductId = 10,
+                            Stock = 16
+                        },
+                        new
+                        {
+                            Id = 25,
+                            ConfigLabel = "256GB - Porcelain",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 28990000m,
+                            ProductId = 10,
+                            Stock = 12
+                        },
+                        new
+                        {
+                            Id = 26,
+                            ConfigLabel = "512GB - Bay",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 33990000m,
+                            ProductId = 10,
+                            Stock = 8
+                        },
+                        new
+                        {
+                            Id = 27,
+                            ConfigLabel = "128GB Wi-Fi - Space Gray",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 27990000m,
+                            ProductId = 11,
+                            Stock = 14
+                        },
+                        new
+                        {
+                            Id = 28,
+                            ConfigLabel = "256GB Wi-Fi + Cellular - Silver",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 35990000m,
+                            ProductId = 11,
+                            Stock = 9
+                        },
+                        new
+                        {
+                            Id = 29,
+                            ConfigLabel = "512GB Wi-Fi - Space Gray",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 41990000m,
+                            ProductId = 11,
+                            Stock = 6
+                        },
+                        new
+                        {
+                            Id = 30,
+                            ConfigLabel = "128GB Wi-Fi - Graphite",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 19990000m,
+                            ProductId = 12,
+                            Stock = 16
+                        },
+                        new
+                        {
+                            Id = 31,
+                            ConfigLabel = "256GB 5G - Beige",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 24990000m,
+                            ProductId = 12,
+                            Stock = 11
+                        },
+                        new
+                        {
+                            Id = 32,
+                            ConfigLabel = "512GB 5G - Cream",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 29990000m,
+                            ProductId = 12,
+                            Stock = 8
+                        },
+                        new
+                        {
+                            Id = 33,
+                            ConfigLabel = "Intel i5, 8GB RAM, 256GB SSD",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 26990000m,
+                            ProductId = 13,
+                            Stock = 12
+                        },
+                        new
+                        {
+                            Id = 34,
+                            ConfigLabel = "Intel i7, 16GB RAM, 512GB SSD",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 35990000m,
+                            ProductId = 13,
+                            Stock = 8
+                        },
+                        new
+                        {
+                            Id = 35,
+                            ConfigLabel = "41mm GPS - Pink",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 9990000m,
+                            ProductId = 14,
+                            Stock = 22
+                        },
+                        new
+                        {
+                            Id = 36,
+                            ConfigLabel = "45mm GPS + Cellular - Midnight",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 12990000m,
+                            ProductId = 14,
+                            Stock = 18
+                        },
+                        new
+                        {
+                            Id = 37,
+                            ConfigLabel = "41mm GPS - Starlight",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 9990000m,
+                            ProductId = 14,
+                            Stock = 20
+                        },
+                        new
+                        {
+                            Id = 38,
+                            ConfigLabel = "40mm Bluetooth - Graphite",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 6990000m,
+                            ProductId = 15,
+                            Stock = 25
+                        },
+                        new
+                        {
+                            Id = 39,
+                            ConfigLabel = "44mm LTE - Silver",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 8990000m,
+                            ProductId = 15,
+                            Stock = 20
+                        },
+                        new
+                        {
+                            Id = 40,
+                            ConfigLabel = "40mm Bluetooth - Gold",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 6990000m,
+                            ProductId = 15,
+                            Stock = 22
+                        },
+                        new
+                        {
+                            Id = 41,
+                            ConfigLabel = "USB-C - White",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 6490000m,
+                            ProductId = 16,
+                            Stock = 30
+                        },
+                        new
+                        {
+                            Id = 42,
+                            ConfigLabel = "Wireless - Black",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 8990000m,
+                            ProductId = 17,
+                            Stock = 15
+                        },
+                        new
+                        {
+                            Id = 43,
+                            ConfigLabel = "Wireless - Silver",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 8990000m,
+                            ProductId = 17,
+                            Stock = 12
+                        },
+                        new
+                        {
+                            Id = 44,
+                            ConfigLabel = "Wireless - Black",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 7990000m,
+                            ProductId = 18,
+                            Stock = 18
+                        },
+                        new
+                        {
+                            Id = 45,
+                            ConfigLabel = "Wireless - White Smoke",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 7990000m,
+                            ProductId = 18,
+                            Stock = 15
+                        },
+                        new
+                        {
+                            Id = 46,
+                            ConfigLabel = "Standard Edition",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 13990000m,
+                            ProductId = 19,
+                            Stock = 8
+                        },
+                        new
+                        {
+                            Id = 47,
+                            ConfigLabel = "Digital Edition",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 10990000m,
+                            ProductId = 19,
+                            Stock = 5
+                        },
+                        new
+                        {
+                            Id = 48,
+                            ConfigLabel = "White - OLED Model",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 8990000m,
+                            ProductId = 20,
+                            Stock = 20
+                        },
+                        new
+                        {
+                            Id = 49,
+                            ConfigLabel = "Neon Blue/Red - OLED Model",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 8990000m,
+                            ProductId = 20,
+                            Stock = 18
+                        },
+                        new
+                        {
+                            Id = 50,
+                            ConfigLabel = "Splatoon 3 Edition - OLED Model",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Price = 9990000m,
+                            ProductId = 20,
+                            Stock = 12
+                        });
                 });
 
             modelBuilder.Entity("ProductService.Repository.Models.Product", b =>

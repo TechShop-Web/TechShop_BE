@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProductService.Repository.Configurations;
 using ProductService.Repository.Models;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -36,6 +37,10 @@ namespace ProductService.Repository.Frameworks
             modelBuilder.Entity<ProductVariant>()
                 .Property(v => v.Price)
                 .HasPrecision(10, 2);
+
+            modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductVariantConfiguration());
         }
 
     }

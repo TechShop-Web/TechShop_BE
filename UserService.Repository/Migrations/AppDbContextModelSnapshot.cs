@@ -57,6 +57,53 @@ namespace UserService.Repository.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "admin@techshop.vn",
+                            FullName = "Nguyễn Văn Admin",
+                            Password = "$2a$11$qTDzHOexheYCrZsBApEeyu3QzUzRodJ1tLRaEB4nl97vgLl3mVW4y",
+                            Role = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "manager@techshop.vn",
+                            FullName = "Trần Thị Manager",
+                            Password = "$2a$11$zI8QzMGc83g/CmPQbDOLKONWrU1Da1ubC/7dLlLGkTQl7P/sAmkD6",
+                            Role = "Manager"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "user1@gmail.com",
+                            FullName = "Lê Văn User",
+                            Password = "$2a$11$LzjQbfFYlybLeXWrF2OKYeUuZ1DEFlzchVE.1t3IgNQr29vzwhbMy",
+                            Role = "User"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "user2@gmail.com",
+                            FullName = "Phạm Thị Hương",
+                            Password = "$2a$11$YURV0z1hAa2g0Gz05amO/eXOfnM9.mTssh0Mn6ftgQW9gQxDzNcCS",
+                            Role = "User"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "customer@techshop.vn",
+                            FullName = "Hoàng Minh Khách",
+                            Password = "$2a$11$2p2sgLHOHAWQoSi2SM7OregbHoWaAMZSmJWiR3b0H0rCUZ/qMeD2S",
+                            Role = "User"
+                        });
                 });
 #pragma warning restore 612, 618
         }

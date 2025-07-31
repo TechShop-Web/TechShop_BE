@@ -43,7 +43,7 @@ namespace PaymentService.Service.Services
 
             var payment = new Payment
             {
-                OrderId = request.OrderId,
+                //OrderId = request.OrderId,
                 PaymentMethod = (Repository.Enums.PaymentMethod)request.PaymentMethod,
                 PaymentStatus = Repository.Enums.PaymentStatus.PENDING,
                 TransactionId = null,

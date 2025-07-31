@@ -1,19 +1,29 @@
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using PaymentService.Repository.Interfaces;
 using PaymentService.Repository.Models;
 using PaymentService.Repository.Repositories;
 using PaymentService.Service;
 using PaymentService.Service.Interfaces;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "PaymentService API",
+        Version = "v1"
+    });
+});
+
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.Configure<VnPayModel>(builder.Configuration.GetSection("VNPay"));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -21,6 +31,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService.Service.Services.PaymentService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -34,12 +45,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddGrpcClient<OrderService.Grpc.OrderService.OrderServiceClient>(options =>
 {
-    options.Address = new Uri(builder.Configuration["Services:OrderService:GrpcUrl"]);
+    options.Address = new Uri(builder.Configuration["GrpcSettings:OrderServiceUrl"]);
 })
 .ConfigurePrimaryHttpMessageHandler(() =>
 {
     var handler = new HttpClientHandler();
-    if (builder.Environment.IsDevelopment())
+    if (builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Docker")
     {
         handler.ServerCertificateCustomValidationCallback =
             HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -47,10 +58,58 @@ builder.Services.AddGrpcClient<OrderService.Grpc.OrderService.OrderServiceClient
     return handler;
 });
 
+// Add Health Checks
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy("PaymentService is running"))
+    .AddSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection") ?? "Server=sqlserver;Database=TechShopPaymentDB;User Id=sa;Password=12345;TrustServerCertificate=True;",
+        name: "database",
+        timeout: TimeSpan.FromSeconds(30));
+
 var app = builder.Build();
 
+// Database Migration
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        Console.WriteLine("Starting Payment database migration...");
+        var retryCount = 0;
+        while (retryCount < 10)
+        {
+            try
+            {
+                await dbContext.Database.CanConnectAsync();
+                Console.WriteLine("Payment database connection successful.");
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                Console.WriteLine($"Payment database connection attempt {retryCount}/10 failed: {ex.Message}");
+                await Task.Delay(5000);
+            }
+        }
+
+        if (retryCount < 10)
+        {
+            await dbContext.Database.MigrateAsync();
+            Console.WriteLine("Payment database migration completed successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to connect to Payment database after 10 attempts.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while migrating the Payment database: {ex.Message}");
+    }
+}
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -58,30 +117,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+// Add Health Check endpoint
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            service = "PaymentService",
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                exception = x.Value.Exception?.Message,
+                duration = x.Value.Duration.ToString()
+            })
+        };
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+    }
+});
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
 app.MapControllers();
 app.UseCors("AllowAllOrigins");
-app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+Console.WriteLine("PaymentService started successfully on Docker environment");
+Console.WriteLine($"Swagger available at: http://localhost:8080/swagger");
+Console.WriteLine($"Health check available at: http://localhost:8080/health");
+
+app.Run();

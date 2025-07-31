@@ -4,12 +4,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>426e5cfd-006c-4837-b611-288cf1e4910d</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 	<ItemGroup>
 		<Protobuf Include="..\SharedProtos\Protos\product.proto" GrpcServices="Client" />
 		<Protobuf Include="..\SharedProtos\Protos\order.proto" GrpcServices="Both" />
 	</ItemGroup>
   <ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
+	  <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.0" />
 	  <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
 	  <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
 	  <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
@@ -25,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 
   </ItemGroup>

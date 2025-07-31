@@ -31,22 +31,8 @@ namespace PaymentService.API.Controller
         {
             try
             {
-                var orderRequest = new GetOrderRequest { OrderId = request.OrderId };
-                var orderResponse = await _orderServiceClient.GetOrderAsync(orderRequest);
 
-                if (orderResponse == null)
-                {
-                    return BadRequest($"Order {request.OrderId} not found");
-                }
-
-                var updatedRequest = new CreatePaymentRequest
-                {
-                    OrderId = orderResponse.Id, 
-                    PaymentMethod = request.PaymentMethod,
-                    Amount = (float)orderResponse.TotalAmount
-                };
-
-                var paymentUrl = await _service.CreateVNPayPaymentUrlAsync(updatedRequest, HttpContext);
+                var paymentUrl = await _service.CreateVNPayPaymentUrlAsync(request, HttpContext);
                 return Ok(new { url = paymentUrl });
             }
             catch (RpcException ex)

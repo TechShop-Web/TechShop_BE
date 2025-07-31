@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -11,23 +13,6 @@ using UserService.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
-
-// Add JWT Authentication
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuer = true,
-//            ValidateAudience = true,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            ValidIssuer = config["Jwt:Issuer"],
-//            ValidAudience = config["Jwt:Audience"],
-//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]))
-//        };
-//    });
-// Add JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -60,54 +45,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Add Authorization
 builder.Services.AddAuthorization();
 
-// Add DBContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(config.GetConnectionString("Default")));
+    options.UseSqlServer(config.GetConnectionString("Default"))
+           .ConfigureWarnings(warnings =>
+               warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
+);
 
-// DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService.Service.Services.UserService>();
 
 builder.Services.AddGrpc();
 
-// Add Controller + Swagger
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy("UserService is running"))
+    .AddSqlServer(
+        config.GetConnectionString("Default") ?? "Server=sqlserver;Database=TechShop_UserDb;User Id=sa;Password=12345;TrustServerCertificate=True;",
+        name: "database",
+        timeout: TimeSpan.FromSeconds(30));
+
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new() { Title = "UserService API", Version = "v1" });
-
-
-//    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//    {
-//        Name = "Authorization",
-//        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-//        Scheme = "Bearer",
-//        BearerFormat = "JWT",
-//        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-//        Description = "Nhập token dạng: Bearer {your JWT token}"
-//    });
-
-//    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-//    {
-//        {
-//            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//            {
-//                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-//                {
-//                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-//                    Id = "Bearer"
-//                }
-//            },
-//            new string[] {}
-//        }
-//    });
-//});
-
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -137,6 +95,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -147,20 +106,81 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader();
         });
 });
+
 var app = builder.Build();
 
-// Middleware
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        Console.WriteLine("Starting User database migration...");
+        var retryCount = 0;
+        while (retryCount < 10)
+        {
+            try
+            {
+                await dbContext.Database.CanConnectAsync();
+                Console.WriteLine("User database connection successful.");
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                Console.WriteLine($"User database connection attempt {retryCount}/10 failed: {ex.Message}");
+                await Task.Delay(5000);
+            }
+        }
+
+        if (retryCount < 10)
+        {
+            await dbContext.Database.MigrateAsync();
+            Console.WriteLine("User database migration completed successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to connect to User database after 10 attempts.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while migrating the User database: {ex.Message}");
+    }
+}
+
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGrpcService<UserGrpcService>();
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            service = "UserService",
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                exception = x.Value.Exception?.Message,
+                duration = x.Value.Duration.ToString()
+            })
+        };
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+    }
+});
 
+app.MapGrpcService<UserGrpcService>();
 app.MapControllers();
+
 
 app.Run();
