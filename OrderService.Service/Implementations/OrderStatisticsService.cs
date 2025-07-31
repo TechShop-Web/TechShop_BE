@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderService.Repository.ApplicationContext;
+using OrderService.Repository.Enum;
 using OrderService.Service.Interfaces;
 using OrderService.Service.Models;
 
@@ -21,7 +22,7 @@ namespace OrderService.Service.Implementations
                 throw new ArgumentException("Page index and page size must be greater than zero.");
             }
 
-            var query = _context.Orders.AsQueryable();
+            var query = _context.Orders.AsQueryable().Where(o => o.Status == OrderStatus.Confirmed);
 
             // Filter by date range if provided
             if (startDate.HasValue)
